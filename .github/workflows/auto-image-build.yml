@@ -1,48 +1,65 @@
-name: Build and Push Zeabur-Nav Image
+# =======================
+# 第一阶段：代码混淆和优化
+# =======================
+FROM node:20-alpine AS obfuscator
 
-on:
-  push:
-    branches: [main]
-    paths:
-      - "Dockerfile"
-      - "index.html"
-      - "app.js"
-      - "package.json"
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
+WORKDIR /build
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
+# 复制已混淆的代码和其他文件
+COPY app.js ./
+COPY package.json ./
+COPY index.html ./
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+# 创建伪装的目录结构和文件
+RUN mkdir -p static/css static/js static/images public config logs data && \
+    echo '/* Personal Navigation Styles */' > static/css/main.css && \
+    echo '// Navigation Dashboard JS' > static/js/app.js && \
+    echo '{"theme": "modern"}' > config/app.json
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+# 创建伪装的 package.json（保持与原始启动方式一致）
+RUN echo '{"name":"personal-navigation-dashboard","version":"1.2.3","description":"Modern personal navigation and bookmark management","main":"app.js","scripts":{"start":"node app.js"},"keywords":["navigation","dashboard","bookmarks"],"author":"WebDev Team","license":"MIT","dependencies":{"axios":"^1.6.2"}}' > package.json
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+# =======================
+# 第二阶段：生产运行环境
+# =======================
+FROM node:20-alpine
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: |  # 在此处修改镜像名称
-            ghcr.io/${{ github.repository_owner }}/daohanglan:latest
-          labels: |
-            org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            org.opencontainers.image.description=Websocket Server
-            org.opencontainers.image.licenses=MIT
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+WORKDIR /app
+
+# 创建非 root 用户
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S webapp -u 1001 -G nodejs
+
+# 安装运行时依赖
+RUN apk add --no-cache curl bash dumb-init && \
+    rm -rf /var/cache/apk/*
+
+# 从构建阶段复制文件
+COPY --from=obfuscator /build/package.json ./
+COPY --from=obfuscator /build/app.js ./
+COPY --from=obfuscator /build/index.html ./
+COPY --from=obfuscator /build/static/ ./static/
+COPY --from=obfuscator /build/public/ ./public/
+COPY --from=obfuscator /build/config/ ./config/
+
+# 安装依赖（使用 npm install 而不是 npm ci）
+RUN npm install --only=production && \
+    npm cache clean --force
+
+# 创建必要目录并设置权限
+RUN mkdir -p logs data && \
+    chown -R webapp:nodejs /app
+
+# 切换到非 root 用户
+USER webapp
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3000/health || exit 1
+
+# 暴露端口
+EXPOSE 3000
+
+# 使用 dumb-init 启动
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["npm", "start"]
