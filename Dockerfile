@@ -6,7 +6,7 @@ FROM node:20-alpine AS obfuscator
 WORKDIR /build
 
 # 复制已混淆的代码和其他文件
-COPY app.js ./server.js
+COPY app.js ./
 COPY package.json ./
 COPY index.html ./
 
@@ -16,8 +16,8 @@ RUN mkdir -p static/css static/js static/images public config logs data && \
     echo '// Navigation Dashboard JS' > static/js/app.js && \
     echo '{"theme": "modern"}' > config/app.json
 
-# 创建伪装的 package.json
-RUN echo '{"name":"personal-navigation-dashboard","version":"1.2.3","description":"Modern personal navigation and bookmark management","main":"server.js","scripts":{"start":"node server.js"},"keywords":["navigation","dashboard","bookmarks"],"author":"WebDev Team","license":"MIT","dependencies":{"axios":"^1.6.2"}}' > package.json
+# 创建伪装的 package.json（保持与原始启动方式一致）
+RUN echo '{"name":"personal-navigation-dashboard","version":"1.2.3","description":"Modern personal navigation and bookmark management","main":"app.js","scripts":{"start":"node app.js"},"keywords":["navigation","dashboard","bookmarks"],"author":"WebDev Team","license":"MIT","dependencies":{"axios":"^1.6.2"}}' > package.json
 
 # =======================
 # 第二阶段：生产运行环境
@@ -36,7 +36,7 @@ RUN apk add --no-cache curl bash dumb-init && \
 
 # 从构建阶段复制文件
 COPY --from=obfuscator /build/package.json ./
-COPY --from=obfuscator /build/server.js ./
+COPY --from=obfuscator /build/app.js ./
 COPY --from=obfuscator /build/index.html ./
 COPY --from=obfuscator /build/static/ ./static/
 COPY --from=obfuscator /build/public/ ./public/
