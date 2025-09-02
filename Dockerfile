@@ -42,8 +42,8 @@ COPY --from=obfuscator /build/static/ ./static/
 COPY --from=obfuscator /build/public/ ./public/
 COPY --from=obfuscator /build/config/ ./config/
 
-# 安装依赖
-RUN npm ci --only=production && \
+# 安装依赖（使用 npm install 而不是 npm ci）
+RUN npm install --only=production && \
     npm cache clean --force
 
 # 创建必要目录并设置权限
