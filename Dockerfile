@@ -14,7 +14,7 @@ COPY package.json ./
 COPY index.html ./
 
 # 创建伪装的目录结构和文件
-RUN mkdir -p static/{css,js,images} public config logs data && \
+RUN mkdir -p static/css static/js static/images public config logs data && \
     echo '/* Personal Navigation Styles */' > static/css/main.css && \
     echo '// Navigation Dashboard JS' > static/js/app.js && \
     echo '{"theme": "modern"}' > config/app.json
