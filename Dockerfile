@@ -16,8 +16,8 @@ RUN mkdir -p static/css static/js static/images public config logs data && \
     echo '// Navigation Dashboard JS' > static/js/app.js && \
     echo '{"theme": "modern"}' > config/app.json
 
-# 创建伪装的 package.json（保持与原始启动方式一致）
-RUN echo '{"name":"personal-navigation-dashboard","version":"1.2.3","description":"Modern personal navigation and bookmark management","main":"app.js","scripts":{"start":"node app.js"},"keywords":["navigation","dashboard","bookmarks"],"author":"WebDev Team","license":"MIT","dependencies":{"axios":"^1.6.2"}}' > package.json
+# 使用您原始的 package.json（包含正确的依赖）
+# 不覆盖，直接使用复制的 package.json
 
 # =======================
 # 第二阶段：生产运行环境
