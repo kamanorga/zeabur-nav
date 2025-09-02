@@ -5,8 +5,8 @@ FROM node:20-alpine AS obfuscator
 
 WORKDIR /build
 
-# 复制混淆后的代码和其他文件
-COPY app.obf.js ./server.js
+# 复制已混淆的代码和其他文件
+COPY app.js ./server.js
 COPY package.json ./
 COPY index.html ./
 
