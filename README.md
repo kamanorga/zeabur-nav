@@ -1,1 +1,1 @@
-节点访问路径/daohanglan
+节点访问路径为：域名/daohanglan
