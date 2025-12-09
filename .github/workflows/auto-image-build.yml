@@ -39,7 +39,7 @@ jobs:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
           tags: |  # 在此处修改镜像名称
-            ghcr.io/${{ github.repository_owner }}/daohanglan:latest
+            ghcr.io/${{ github.repository_owner }}/webnavi:latest
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.description=HTTP Server
