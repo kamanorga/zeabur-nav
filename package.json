@@ -2,7 +2,7 @@
   "name": "navigation-website",
   "version": "1.0.0",
   "description": "nodejs",
-  "author": "eooce",
+  "author": "faiz",
   "repository": "",
   "license": "MIT",
   "private": false,
@@ -17,4 +17,5 @@
     "node": ">=16.0.0",
     "npm": ">=7.0.0"
   }
+
 }
